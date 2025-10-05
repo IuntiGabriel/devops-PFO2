@@ -1,0 +1,46 @@
+version: "3.8" # deprecado segun alertas al ejecutar
+
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "20080:80" # mapea el puerto 80 del contenedor al puerto 20080 del host parano usar puertos conocidos 
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - redweb
+
+  
+  
+  # Teniamos proeblemas con el contexto que estaba definido desde la carpeta PHP
+  #php:
+  #  build: ./php
+
+
+
+  php:
+    build:
+      context: .
+      dockerfile: ./php/Dockerfile
+  
+    volumes:
+      - ./src:/var/www/html
+    networks:
+      - redweb
+
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testdb
+    ports:
+      - "23306:3306" # mapea el puerto 3306 del contenedor al puerto 23306 del host para evitar conflictos
+    networks:
+      - redweb
+
+networks: # Creamos una red para que se comuniquen los contenedores
+  redweb:
+    driver: bridge 
